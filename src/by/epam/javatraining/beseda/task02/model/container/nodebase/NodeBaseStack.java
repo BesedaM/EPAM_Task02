@@ -24,15 +24,16 @@ public class NodeBaseStack<T> extends AbstractNodeCollection<T> {
         }
         return null;
     }
-    
 
     @Override
     public T get() {
-        Node<T> temp = last;
-        if (last != null) {
+
+        if (size > 0) {
+            T elem = last.elem;
             last = last.prev;
-            last.next = null;
-            return temp.elem;
+            unbindNodes(last, last.next);
+            size--;
+            return elem;
         }
         return null;
     }

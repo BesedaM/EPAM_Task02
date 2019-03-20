@@ -39,13 +39,13 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
         last = nodeNext;
     }
 
-    private class MyIterator<T> implements ListIterator<T> {
+    private class MyIterator implements ListIterator<T> {
 
         private Node<T> node = null;
         private int index = 0;
 
         public MyIterator(AbstractNodeCollection<T> collection) {
-            this.node = (Node<T>) collection.first;
+            this.node = collection.first;
         }
 
         @Override
@@ -94,17 +94,13 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
 
         @Override
         public void remove() {
-            Node<T> prev;
-            Node<T> next;
+            index--;
+            size--;
             if (hasPrevious()) {
-                prev = node.prev;
-                index--;
-                size--;
                 if (hasNext()) {
-                    next = node.next;
-                    bindNodes(next, prev);
+                    bindNodes(node.prev, node.next);
                 } else {
-                    prev.next = null;
+                    node.prev.next = null;
                 }
             }
         }
@@ -124,11 +120,12 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
                     bindNodes(newNode, node.next);
                     bindNodes(node, newNode);
                 } else {
-                    bindNodes(newNode, first.next);
+//                    bindNodes(newNode, first.next);
                     bindNodes(first, newNode);
                 }
             } else if (hasPrevious()) {
                 bindNodes(node, newNode);
+                node = newNode;
             }
         }
     }
@@ -145,6 +142,11 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
         public Node(T obj) {
             this.elem = obj;
         }
+
+        @Override
+        public String toString() {
+            return elem.toString();
+        }
     }
 
     protected final void bindNodes(Node<T> previous, Node<T> next) {
@@ -152,8 +154,13 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
         next.prev = previous;
     }
 
+    protected final void unbindNodes(Node<T> previous, Node<T> next) {
+        next.prev = null;
+        previous.next = null;
+    }
+
     public ListIterator<T> getIterator() {
-        return new MyIterator<>(this);
+        return new MyIterator(this);
     }
 
     @Override
@@ -183,7 +190,7 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
         if (obj != null) {
             iterator = this.getIterator();
             while (iterator.hasNext()) {
-                if (iterator.next().equals(obj)) {
+                if (obj.equals(iterator.next())) {
                     return true;
                 }
             }
@@ -213,14 +220,9 @@ public abstract class AbstractNodeCollection<T> extends AbstractMyCollection<T> 
 
     @Override
     public boolean remove(T obj) {
-        if (obj != null) {
-            iterator = this.getIterator();
-            while (iterator.hasNext()) {
-                if (iterator.next().equals(obj)) {
-                    iterator.remove();
-                    return true;
-                }
-            }
+        if (contains(obj)) {
+            iterator.remove();
+            return true;
         }
         return false;
     }
